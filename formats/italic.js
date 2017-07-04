@@ -1,7 +1,7 @@
-import Bold from './bold';
+import Inline from '../blots/inline';
 
-class Italic extends Bold { }
+class Italic extends Inline { }
 Italic.blotName = 'italic';
-Italic.tagName = ['EM', 'I'];
+Italic.tagName = 'I';
 
 export default Italic;
