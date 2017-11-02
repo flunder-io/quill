@@ -145,6 +145,10 @@ module.exports = function(env) {
       })
     );
     config.devtool = 'source-map';
+  } else {
+    config.plugins.push(
+      new webpack.optimize.UglifyJsPlugin()
+    );
   }
 
   if (env && env.coverage) {
