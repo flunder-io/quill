@@ -13,6 +13,7 @@ import { ColorClass, ColorStyle } from './formats/color';
 import { FontClass, FontStyle } from './formats/font';
 import { SizeClass, SizeStyle } from './formats/size';
 
+import Marked from './formats/marked';
 import Bold from './formats/bold';
 import Italic from './formats/italic';
 import Link from './formats/link';
@@ -73,6 +74,7 @@ Quill.register({
   'formats/header': Header,
   'formats/list': List,
 
+  'formats/marked': Marked,
   'formats/bold': Bold,
   'formats/code': InlineCode,
   'formats/italic': Italic,
