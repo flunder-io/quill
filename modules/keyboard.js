@@ -140,8 +140,11 @@ Keyboard.keys = {
 
 Keyboard.DEFAULTS = {
   bindings: {
+    'marked'    : makeFormatHandler('marked'),
     'bold'      : makeFormatHandler('bold'),
     'italic'    : makeFormatHandler('italic'),
+    'strike'    : makeFormatHandler('strike'),
+    'code'      : makeFormatHandler('code', 'J'),
     'underline' : makeFormatHandler('underline'),
     'indent': {
       // highlight tab or tab at beginning of list, indent or blockquote
@@ -457,9 +460,9 @@ function makeCodeBlockHandler(indent) {
   };
 }
 
-function makeFormatHandler(format) {
+function makeFormatHandler(format, key = null) {
   return {
-    key: format[0].toUpperCase(),
+    key: key || format[0].toUpperCase(),
     shortKey: true,
     handler: function(range, context) {
       this.quill.format(format, !context.format[format], Quill.sources.USER);
