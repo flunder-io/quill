@@ -86,7 +86,7 @@ class Selection {
 
   focus() {
     if (this.hasFocus()) return;
-    this.root.focus();
+    this.root.focus({preventScroll: true});
     this.setRange(this.savedRange);
   }
 
