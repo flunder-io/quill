@@ -28,6 +28,7 @@ const CLIPBOARD_CONFIG = [
   [Node.ELEMENT_NODE, matchAttributor],
   [Node.ELEMENT_NODE, matchStyles],
   ['li', matchIndent],
+  ['em', matchAlias.bind(matchAlias, 'marked')],
   ['b', matchAlias.bind(matchAlias, 'bold')],
   ['i', matchAlias.bind(matchAlias, 'italic')],
   ['style', matchIgnore]
@@ -57,6 +58,8 @@ const STYLE_ATTRIBUTORS = [
 class Clipboard extends Module {
   constructor(quill, options) {
     super(quill, options);
+    this.quill.root.addEventListener('copy', e => this.onCaptureCopy(e, false));
+    this.quill.root.addEventListener('cut', e => this.onCaptureCopy(e, true));
     this.quill.root.addEventListener('paste', this.onPaste.bind(this));
     this.container = this.quill.addContainer('ql-clipboard');
     this.container.setAttribute('contenteditable', true);
@@ -102,6 +105,20 @@ class Clipboard extends Module {
       let paste = this.convert(html);
       this.quill.updateContents(new Delta().retain(index).concat(paste), source);
       this.quill.setSelection(index + paste.length(), Quill.sources.SILENT);
+    }
+  }
+
+  onCaptureCopy(e, isCut = false) {
+    if (e.defaultPrevented) return;
+    e.preventDefault();
+    const [range] = this.quill.selection.getRange();
+    if (range == null) return;
+    const text = this.quill.getText(range);
+    e.clipboardData.setData('text/plain', text);
+    const html = this.quill.getSemanticHTML(range);
+    e.clipboardData.setData('text/html', html);
+    if (isCut) {
+      this.quill.deleteText(range, Quill.sources.USER);
     }
   }
 
@@ -313,6 +330,9 @@ function matchStyles(node, delta) {
   if (style.fontWeight && (computeStyle(node).fontWeight.startsWith('bold') ||
                            parseInt(computeStyle(node).fontWeight) >= 700)) {
     formats.bold = true;
+  }
+  if (style.textDecoration === 'line-through') {
+    formats.strike = true;
   }
   if (Object.keys(formats).length > 0) {
     delta = applyFormat(delta, formats);

@@ -242,6 +242,11 @@ class Quill {
     return this.selection.getRange()[0];
   }
 
+  getSemanticHTML(index = 0, length = this.getLength() - index) {
+    [index, length] = overload(index, length);
+    return this.editor.getHTML(index, length);
+  }
+
   getText(index = 0, length = this.getLength() - index) {
     [index, length] = overload(index, length);
     return this.editor.getText(index, length);
