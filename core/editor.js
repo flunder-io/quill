@@ -8,6 +8,7 @@ import Break from '../blots/break';
 import clone from 'clone';
 import equal from 'deep-equal';
 import extend from 'extend';
+import TextBlot, { escapeText } from '../blots/text';
 
 
 const ASCII = /^[ -~]*$/;
@@ -141,6 +142,14 @@ class Editor {
     return extend.apply(extend, formatsArr);
   }
 
+  getHTML(index, length) {
+    const [line, lineOffset] = this.scroll.line(index);
+    if (line.length() >= lineOffset + length) {
+      return convertHTML(line, lineOffset, length, true);
+    }
+    return convertHTML(this.scroll, index, length, true);
+  }
+
   getText(index, length) {
     return this.getContents(index, length).filter(function(op) {
       return typeof op.insert === 'string';
@@ -222,6 +231,76 @@ class Editor {
   }
 }
 
+function convertListHTML(items, lastIndent, listTags) {
+  if (items.length === 0) {
+    const endTag = listTags.pop();
+    if (lastIndent <= 0) {
+      return `</li></${endTag}>`;
+    }
+    return `</li></${endTag}>${convertListHTML([], lastIndent - 1, listTags)}`;
+  }
+  const [{ child, offset, length, indent, tag }, ...rest] = items;
+  if (indent > lastIndent) {
+    listTags.push(tag);
+    if (indent === lastIndent + 1) {
+      return `<${tag}><li>${convertHTML(
+        child,
+        offset,
+        length,
+      )}${convertListHTML(rest, indent, listTags)}`;
+    }
+    return `<${tag}><li>${convertListHTML(items, lastIndent + 1, listTags)}`;
+  }
+  const previousTag = listTags[listTags.length - 1];
+  if (indent === lastIndent && tag === previousTag) {
+    return `</li><li>${convertHTML(
+      child,
+      offset,
+      length,
+    )}${convertListHTML(rest, indent, listTags)}`;
+  }
+  const endTag = listTags.pop();
+  return `</li></${endTag}>${convertListHTML(items, lastIndent - 1, listTags)}`;
+}
+
+function convertHTML(blot, index, length, isRoot = false) {
+  if (typeof blot.html === 'function') {
+    return blot.html(index, length);
+  }
+  if (blot instanceof TextBlot) {
+    return escapeText(blot.value().slice(index, index + length));
+  }
+  if (blot.children) {
+    // TODO fix API
+    const tagName = blot.domNode.tagName.toLowerCase();
+    if (tagName === "ul" || tagName === "ol") {
+      const items = [];
+      blot.children.forEachAt(index, length, (child, offset, childLength) => {
+        const formats = child.formats();
+        items.push({
+          child,
+          offset,
+          length: childLength,
+          indent: formats.indent || 0,
+          tag: tagName,
+        });
+      });
+      return convertListHTML(items, -1, []);
+    }
+    const parts = [];
+    blot.children.forEachAt(index, length, (child, offset, childLength) => {
+      parts.push(convertHTML(child, offset, childLength));
+    });
+    if (isRoot || tagName === 'li') {
+      return parts.join('');
+    }
+    const { outerHTML, innerHTML } = blot.domNode;
+    const [start, end] = outerHTML.split(`>${innerHTML}<`);
+    // TODO cleanup
+    return `${start}>${parts.join('')}<${end}`;
+  }
+  return blot.domNode.outerHTML;
+}
 
 function combineFormats(formats, combined) {
   return Object.keys(combined).reduce(function(merged, name) {
