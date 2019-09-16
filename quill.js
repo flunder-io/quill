@@ -1,5 +1,7 @@
 import Quill from './core';
 
+import { IndentClass as Indent } from './formats/indent';
+
 import List, { ListItem } from './formats/list';
 
 import Marked from './formats/marked';
@@ -10,6 +12,8 @@ import Strike from './formats/strike';
 import CodeBlock, { Code as InlineCode } from './formats/code';
 
 Quill.register({
+  'formats/indent': Indent,
+
   'formats/marked': Marked,
   'formats/bold': Bold,
   'formats/italic': Italic,
