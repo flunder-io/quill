@@ -338,7 +338,7 @@ function matchText(node, delta) {
   if (node.parentNode.tagName === 'O:P') {
     return delta.insert(text.trim());
   }
-  if (text.trim().length === 0 && node.parentNode.classList.contains('ql-clipboard')) {
+  if (text.trim().length === 0 && text.includes('\n')) {
     return delta;
   }
   if (!computeStyle(node.parentNode).whiteSpace.startsWith('pre')) {
