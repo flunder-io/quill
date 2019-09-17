@@ -292,7 +292,11 @@ function convertHTML(blot, index, length, isRoot = false) {
       parts.push(convertHTML(child, offset, childLength));
     });
     if (isRoot || tagName === 'li') {
-      return parts.join('');
+      let html = parts.join('');
+      if (tagName === 'li' && html === "") {
+        return "<br/>"
+      }
+      return html;
     }
     const { outerHTML, innerHTML } = blot.domNode;
     const [start, end] = outerHTML.split(`>${innerHTML}<`);
