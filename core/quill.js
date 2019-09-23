@@ -286,8 +286,9 @@ class Quill {
     return this.emitter.once.apply(this.emitter, arguments);
   }
 
-  pasteHTML(index, html, source) {
-    this.clipboard.dangerouslyPasteHTML(index, html, source);
+  dangerouslySetHTML(html) {
+    const delta = this.clipboard.convert(html);
+    this.setContents(delta)
   }
 
   removeFormat(index, length, source) {
