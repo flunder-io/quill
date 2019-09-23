@@ -2,6 +2,7 @@ var path = require('path');
 var pkg = require('../package.json');
 var webpack = require('webpack');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
+var TerserPlugin = require("terser-webpack-plugin");
 
 var bannerPack = new webpack.BannerPlugin({
   banner:
@@ -56,7 +57,7 @@ module.exports = {
         options: {
           compilerOptions: {
             declaration: false,
-            target: 'ES2017',
+            target: 'ES2016',
             module: 'commonjs'
           },
           transpileOnly: true
@@ -72,7 +73,7 @@ module.exports = {
       use: [{
         loader: 'babel-loader',
         options: {
-          presets: ['es2017']
+          presets: ['es2016']
         }
       }]
     }],
@@ -89,4 +90,23 @@ module.exports = {
       filename: 'quill.css',
     }),
   ],
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false,
+        sourceMap: true,
+        terserOptions: {
+          ecma: 7,
+          output: {
+            comments: /Copyright/,
+            max_line_len: 100,
+          },
+          keep_classnames: true,
+          keep_fnames: true,
+          safari10: true,
+        }
+      }),
+    ],
+  }
 };
