@@ -30,6 +30,7 @@ const CLIPBOARD_CONFIG = [
   ['li', matchIndent],
   ['em', matchAlias.bind(matchAlias, 'marked')],
   ['b', matchAlias.bind(matchAlias, 'bold')],
+  ['strong', matchAlias.bind(matchAlias, 'bold')],
   ['i', matchAlias.bind(matchAlias, 'italic')],
   ['style', matchIgnore]
 ];
