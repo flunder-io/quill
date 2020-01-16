@@ -86,6 +86,28 @@ class Clipboard extends Module {
       this.container.innerHTML = '';
       return new Delta().insert(text, { [CodeBlock.blotName]: formats[CodeBlock.blotName] });
     }
+    // Undo checked lists transformation ...
+    for (const x of childElements(this.container)) {
+      if (x.tagName.toLowerCase() === "ul") {
+        for (const li of childElements(x)) {
+          const {firstChild} = li;
+          if (firstChild && firstChild.nodeType === 3) {
+            const {textContent} = firstChild;
+            let checked;
+            if (textContent.startsWith("\u2611 ")) {
+              checked = "true"
+            } else if (textContent.startsWith("\u2610 ")) {
+              checked = "false"
+            }
+            if (checked) {
+              x.dataset.checked = checked;
+              firstChild.remove();
+              li.prepend(textContent.substr(2));
+            }
+          }
+        }
+      }
+    }
     let [elementMatchers, textMatchers] = this.prepareMatching();
     let delta = traverse(this.container, elementMatchers, textMatchers);
     // Remove trailing newline
@@ -361,5 +383,12 @@ function matchText(node, delta) {
   return delta.insert(text);
 }
 
+function childElements(elm) {
+    const a = [];
+    for (let child = elm.firstElementChild; child; child = child.nextElementSibling) {
+        a.push(child)
+    }
+    return a
+}
 
 export { Clipboard as default, matchAttributor, matchBlot, matchNewline, matchSpacing, matchText };

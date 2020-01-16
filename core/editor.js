@@ -239,11 +239,12 @@ function convertListHTML(items, lastIndent, listTags) {
     }
     return `</li></${endTag}>${convertListHTML([], lastIndent - 1, listTags)}`;
   }
-  const [{ child, offset, length, indent, tag }, ...rest] = items;
+  const [{ child, offset, length, indent, tag, checked }, ...rest] = items;
+  const before = checked === "true" ? "\u2611 " : checked === "false" ? "\u2610 " : "";
   if (indent > lastIndent) {
     listTags.push(tag);
     if (indent === lastIndent + 1) {
-      return `<${tag}><li>${convertHTML(
+      return `<${tag}><li>${before}${convertHTML(
         child,
         offset,
         length,
@@ -253,7 +254,7 @@ function convertListHTML(items, lastIndent, listTags) {
   }
   const previousTag = listTags[listTags.length - 1];
   if (indent === lastIndent && tag === previousTag) {
-    return `</li><li>${convertHTML(
+    return `</li><li>${before}${convertHTML(
       child,
       offset,
       length,
@@ -275,6 +276,7 @@ function convertHTML(blot, index, length, isRoot = false) {
     const tagName = blot.domNode.tagName.toLowerCase();
     if (tagName === "ul" || tagName === "ol") {
       const items = [];
+      const checked = blot.domNode.dataset.checked;
       blot.children.forEachAt(index, length, (child, offset, childLength) => {
         const formats = child.formats();
         items.push({
@@ -283,6 +285,7 @@ function convertHTML(blot, index, length, isRoot = false) {
           length: childLength,
           indent: formats.indent || 0,
           tag: tagName,
+          checked,
         });
       });
       return convertListHTML(items, -1, []);
